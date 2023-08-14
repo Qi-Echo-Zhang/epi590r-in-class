@@ -143,7 +143,8 @@ eyes_poisson <- glm(glasses ~ eyesight_cat + sex_cat,
 tbl_eyes_binomial <- tbl_regression(eyes_binomial,
 																		exponentiate = TRUE)
 tbl_eyes_poisson <- tbl_regression(eyes_poisson,
-																		exponentiate = TRUE)
+																		exponentiate = TRUE,
+																	 tidy_fun = partial(tidy_robust, vcov = "HC1"))
 
 tbl_merge(list(tbl_eyes_binomial, tbl_eyes_poisson),
 					tab_spanner = c("**binomial**", "**poisson**"))
