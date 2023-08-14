@@ -31,7 +31,7 @@ tbl_uvregression(
 							eyesight_cat, glasses, age_bir),
 	method = glm,
 	method.args = list(family = binomial()),
-	exponentiate = TRUE)
+	exponentiate = TRUE) # transform log(OR) to OR
 
 
 ## Multivariable regressions
@@ -95,4 +95,56 @@ tbl_int <- tbl_regression(
 
 tbl_merge(list(tbl_no_int, tbl_int),
 					tab_spanner = c("**Model 1**", "**Model 2**"))
+
+# exercise
+## univariate
+tbl_uvregression(
+	nlsy,
+	x = sex_cat,
+	include = c(nsibs, starts_with("sleep"),income),
+	method = lm,
+	label = list(
+		sex_cat ~ "Sex",
+		nsibs ~ "Number of siblings",
+		income ~ "Income",
+		sleep_wkdy ~ "Weekday sleep time",
+		sleep_wknd ~ "Weekend sleep time"
+	))
+
+## multivariate
+#1) poisson
+pois_model <- glm(nsibs ~ sex_cat + income + race_eth_cat,
+											data = nlsy, family = poisson(link = "log"))
+
+tbl_regression(
+	pois_model,
+	exponentiate = TRUE,
+	label = list(
+		sex_cat ~ "Sex",
+		income ~ "Income",
+		race_eth_cat ~ "Race/ethnicity"
+	))
+
+#2) log binomial
+eyes_binomial <- glm(glasses ~ eyesight_cat + sex_cat,
+							 data = nlsy, family =binomial(link = "log"))
+
+tbl_regression(
+	eyes_binomial,
+	exponentiate = TRUE,
+	label = list(
+		sex_cat ~ "Sex",
+		eyesight_cat ~ "Eyesight"
+	))
+
+#3) compare log biniomial and poisson
+eyes_poisson <- glm(glasses ~ eyesight_cat + sex_cat,
+										data = nlsy, family =poisson(link = "log"))
+tbl_eyes_binomial <- tbl_regression(eyes_binomial,
+																		exponentiate = TRUE)
+tbl_eyes_poisson <- tbl_regression(eyes_poisson,
+																		exponentiate = TRUE)
+
+tbl_merge(list(tbl_eyes_binomial, tbl_eyes_poisson),
+					tab_spanner = c("**binomial**", "**poisson**"))
 
