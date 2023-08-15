@@ -4,7 +4,7 @@ library(broom)
 nlsy_cols <- c("glasses", "eyesight", "sleep_wkdy", "sleep_wknd",
 							 "id", "nsibs", "samp", "race_eth", "sex", "region",
 							 "income", "res_1980", "res_2002", "age_bir")
-nlsy <- read_csv(here::here("data", "nlsy.csv"),
+nlsy <- read_csv(here::here("data", "raw", "nlsy.csv"),
 								 na = c("-1", "-2", "-3", "-4", "-5", "-998"),
 								 skip = 1, col_names = nlsy_cols) |>
 	mutate(region_cat = factor(region, labels = c("Northeast", "North Central", "South", "West")),
@@ -28,8 +28,12 @@ bind_rows(
 	eyesight_cat = tidy_eyesight_cat,
 	age_bir = tidy_age_bir, .id = "model") |>
 	mutate(
-		term = str_remove(term, model),
+		term = str_remove(term, model), # remove model name from the term name
 		term = ifelse(term == "", model, term))
+
+
+logistic_model <- glm(glasses ~ eyesight_cat + sex_cat + income,
+											data = nlsy, family = binomial())
 
 tidy(logistic_model, conf.int = TRUE, exponentiate = TRUE) |>
 	tidycat::tidy_categorical(logistic_model, exponentiate = TRUE) |>
